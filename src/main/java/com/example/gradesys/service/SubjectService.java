@@ -1,7 +1,10 @@
 package com.example.gradesys.service;
 
 import com.example.gradesys.exception.Status437SubjectNotFound;
+import com.example.gradesys.model.Result;
 import com.example.gradesys.model.Subject;
+import com.example.gradesys.model.User;
+import com.example.gradesys.repo.ResultRepository;
 import com.example.gradesys.repo.SubjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,7 @@ import java.util.List;
 public class SubjectService {
 
     private final SubjectRepository subjectRepository;
+    private final ResultRepository resultRepository;
 
 
     public Subject createSubject(String subjectName) {
@@ -27,7 +31,14 @@ public class SubjectService {
         return subjectRepository.findById(id).orElseThrow(()->new Status437SubjectNotFound(id));
     }
 
-    public void deleteSubject(Long subjectId) {
-        subjectRepository.deleteById(subjectId);
+    public void deleteSubject(Long subjectId) throws Status437SubjectNotFound {
+
+        Subject subject = getSubject(subjectId);
+        if (subject != null) {
+            resultRepository.deleteAllBySubject_Id(subject.getId());
+            subjectRepository.deleteById(subjectId);
+        }
+
+
     }
 }

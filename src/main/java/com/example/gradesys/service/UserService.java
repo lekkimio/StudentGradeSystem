@@ -50,6 +50,7 @@ public class UserService {
     public void deleteUser(Long id) throws Status434UserNotFound {
         User user = getUserById(id);
         if (user != null) {
+            resultService.deleteAllUserResults(user.getId());
             userRepository.delete(user);
         }
     }

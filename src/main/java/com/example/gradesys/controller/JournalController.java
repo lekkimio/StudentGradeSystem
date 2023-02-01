@@ -3,22 +3,18 @@ package com.example.gradesys.controller;
 import com.example.gradesys.exception.Status434UserNotFound;
 import com.example.gradesys.exception.Status437SubjectNotFound;
 import com.example.gradesys.exception.Status438SubjectExistsException;
+import com.example.gradesys.exception.Status439ResultNotFound;
 import com.example.gradesys.model.Result;
 import com.example.gradesys.model.Subject;
-import com.example.gradesys.model.User;
 import com.example.gradesys.model.dto.ResultDto;
-import com.example.gradesys.model.dto.ResultInfo;
 import com.example.gradesys.model.dto.ResultResponseDto;
-import com.example.gradesys.model.dto.UserResponseDto;
 import com.example.gradesys.service.ResultService;
 import com.example.gradesys.service.SubjectService;
-import com.example.gradesys.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -62,7 +58,7 @@ public class JournalController {
     }
 
     @DeleteMapping("/delete-subject/{subjectId}")
-    public void deleteSubject(@PathVariable Long subjectId){
+    public void deleteSubject(@PathVariable Long subjectId) throws Status437SubjectNotFound {
         subjectService.deleteSubject(subjectId);
     }
 
@@ -72,7 +68,7 @@ public class JournalController {
     }
 
     @PostMapping("/delete-result/{resultId}")
-    public void deleteResult(@PathVariable Long resultId){
+    public void deleteResult(@PathVariable Long resultId) throws Status439ResultNotFound {
         resultService.deleteResult(resultId);
     }
 
