@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Journal</title>
+    <style>
+        table {
+            border:1px solid #b3adad;
+            border-collapse:collapse;
+            padding:5px;
+        }
+        table th {
+            border:1px solid #b3adad;
+            padding:5px;
+            background: #000000;
+            color: #ffffff;
+        }
+        table td {
+            border:1px solid #b3adad;
+            text-align:center;
+            padding:5px;
+            background: #000000;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <!--<thead>
+        <tr>
+            <th>Users</th>
+            <th th:colspan="${subjects.size()}">Subject</th>
+        </tr>
+        </thead>-->
+        <tbody>
+        <tr>
+            <th></th>
+            <td th:each="subject:${subjects}" th:text="${subject.subjectName}"></td>
+        </tr>
+
+        <tr th:each="result:${resultList}">
+            <td th:text="${result.user.firstName + ' ' + result.user.lastName}"></td>
+        <td  th:each="grade, gradeStat : ${result.grades}" th:text="${result.grades[gradeStat.index]}">
+
+        </tbody>
+    </table>
+
+</body>
+</html>
