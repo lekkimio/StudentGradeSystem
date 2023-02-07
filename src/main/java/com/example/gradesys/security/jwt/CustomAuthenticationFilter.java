@@ -54,8 +54,6 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
                                             Authentication authentication) throws IOException {
 
-        System.out.println("CustomAuthenticationFilter.successfulAuthentication");
-
                    UserDetails principal =
                            (UserDetails) authentication.getPrincipal();
            User user = userRepository.findByUsername(principal.getUsername());

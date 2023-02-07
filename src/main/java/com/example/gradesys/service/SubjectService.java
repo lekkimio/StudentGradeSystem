@@ -1,44 +1,17 @@
 package com.example.gradesys.service;
 
 import com.example.gradesys.exception.Status437SubjectNotFound;
-import com.example.gradesys.model.Result;
 import com.example.gradesys.model.Subject;
-import com.example.gradesys.model.User;
-import com.example.gradesys.repo.ResultRepository;
-import com.example.gradesys.repo.SubjectRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class SubjectService {
+public interface SubjectService {
 
-    private final SubjectRepository subjectRepository;
-    private final ResultRepository resultRepository;
+    Subject createSubject(String subjectName);
 
+    List<Subject> getAllSubjects();
 
-    public Subject createSubject(String subjectName) {
-        return subjectRepository.save(Subject.builder().subjectName(subjectName).build());
-    }
+    Subject getSubject(Long id) throws Status437SubjectNotFound;
+    void deleteSubject(Long subjectId) throws Status437SubjectNotFound;
 
-    public List<Subject> getAllSubjects() {
-        return subjectRepository.findAll();
-    }
-
-    public Subject getSubject(Long id) throws Status437SubjectNotFound {
-        return subjectRepository.findById(id).orElseThrow(()->new Status437SubjectNotFound(id));
-    }
-
-    public void deleteSubject(Long subjectId) throws Status437SubjectNotFound {
-
-        Subject subject = getSubject(subjectId);
-        if (subject != null) {
-            resultRepository.deleteAllBySubject_Id(subject.getId());
-            subjectRepository.deleteById(subjectId);
-        }
-
-
-    }
 }

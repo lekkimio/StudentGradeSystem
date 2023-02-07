@@ -70,17 +70,23 @@ public class SecurityConfig {
 
         http
                 .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/admin/**").hasAuthority(Role.ADMIN.name())
-                .requestMatchers(HttpMethod.POST, "/user/**").hasAuthority(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.POST, "/user/**", "/journal/**").hasAuthority(Role.ADMIN.name())
                 .anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .defaultSuccessUrl("/home")
                 .and()
                 .addFilter(customAuthenticationFilter)
                 .addFilterBefore(new CustomAuthorizationFilter(userDetailsService), UsernamePasswordAuthenticationFilter.class)
-                .authenticationManager(authenticationManager);
+                .authenticationManager(authenticationManager)
+                .httpBasic()
+                .and()
+                .rememberMe();
 
         http.headers().frameOptions().disable();
 

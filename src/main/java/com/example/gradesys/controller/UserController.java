@@ -4,9 +4,7 @@ import com.example.gradesys.exception.Status434UserNotFound;
 import com.example.gradesys.exception.Status436UserExistsException;
 import com.example.gradesys.exception.Status437SubjectNotFound;
 import com.example.gradesys.model.User;
-import com.example.gradesys.model.dto.ResultDto;
 import com.example.gradesys.model.dto.UserRequestDto;
-import com.example.gradesys.service.ResultService;
 import com.example.gradesys.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -26,17 +24,17 @@ public class UserController {
     }
 
     @GetMapping("/all")
-    public List<User> getAllUsers() throws Status436UserExistsException {
+    public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) throws Status436UserExistsException, Status434UserNotFound {
+    public User getUserById(@PathVariable Long id) throws Status434UserNotFound {
         return userService.getUserById(id);
     }
 
     @DeleteMapping("/delete-user/{id}")
-    public void deleteUser(@PathVariable Long id) throws Status436UserExistsException, Status434UserNotFound {
+    public void deleteUser(@PathVariable Long id) throws Status434UserNotFound {
         userService.deleteUser(id);
     }
 

@@ -26,25 +26,59 @@
     </style>
 </head>
 <body>
-    <table>
-        <!--<thead>
-        <tr>
-            <th>Users</th>
-            <th th:colspan="${subjects.size()}">Subject</th>
-        </tr>
-        </thead>-->
-        <tbody>
-        <tr>
-            <th></th>
-            <td th:each="subject:${subjects}" th:text="${subject.subjectName}"></td>
-        </tr>
+   <div>
+       <table>
+       <tbody>
+       <tr>
+           <th></th>
+           <td th:each="subject:${subjects}" th:text="${subject.subjectName}"></td>
+       </tr>
 
-        <tr th:each="result:${resultList}">
-            <td th:text="${result.user.firstName + ' ' + result.user.lastName}"></td>
-        <td  th:each="grade, gradeStat : ${result.grades}" th:text="${result.grades[gradeStat.index]}">
+       <tr th:each="result:${resultList}">
+           <td th:text="${result.user.firstName + ' ' + result.user.lastName}"></td>
+           <td  th:each="grade, gradeStat : ${result.grades}" th:text="${result.grades[gradeStat.index]}">
 
-        </tbody>
-    </table>
+       </tbody>
+   </table></div>
+
+
+    <div >
+        <form target="/journal" method="post" action="/journal/edit">
+            <h2>Edit student grade</h2>
+            <p>
+                <label for="userId">UserId</label>
+                <input type="text" id="userId" name="userId" placeholder="UserId" required="" autofocus="">
+            </p>
+            <p>
+                <label for="subjectId" >SubjectId</label>
+                <input type="text" id="subjectId" name="subjectId" placeholder="SubjectId" required="">
+            </p>
+            <p>
+                <label for="grade" >Grade</label>
+                <input type="text" id="grade" name="grade" placeholder="Grade" required="">
+            </p>
+            <p>
+                <button type="submit">Send</button>
+            </p>
+        </form>
+    </div>
+
+   <div >
+       <form target="_self" method="post" action="/create-user">
+           <h2>Add Student</h2>
+           <p>
+               <label for="username">Username</label>
+               <input type="text" id="username" name="username"placeholder="Username" required="" autofocus="">
+           </p>
+           <p>
+               <label for="password" >Password</label>
+               <input type="password" id="password" name="password" placeholder="Password" required="">
+           </p>
+           <p>
+               <button type="submit">Send</button>
+           </p>
+       </form>
+   </div>
 
 </body>
 </html>

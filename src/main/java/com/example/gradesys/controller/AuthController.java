@@ -6,14 +6,14 @@ import com.example.gradesys.exception.Status437SubjectNotFound;
 import com.example.gradesys.model.User;
 import com.example.gradesys.model.dto.UserRequestDto;
 import com.example.gradesys.service.UserService;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
+@Slf4j
 public class AuthController {
 
     private final UserService userService;
@@ -24,7 +24,9 @@ public class AuthController {
 
 
     @PostMapping("/signup")
-    public User signupProcess(UserRequestDto user) throws Status436UserExistsException, Status437SubjectNotFound, Status434UserNotFound {
-        return userService.signup(user);
+    public void signupProcess(UserRequestDto user) throws Status436UserExistsException, Status437SubjectNotFound, Status434UserNotFound {
+        userService.createUser(user);
     }
+
+
 }

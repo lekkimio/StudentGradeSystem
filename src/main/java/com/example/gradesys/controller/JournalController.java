@@ -7,6 +7,7 @@ import com.example.gradesys.exception.Status439ResultNotFound;
 import com.example.gradesys.model.Result;
 import com.example.gradesys.model.Subject;
 import com.example.gradesys.model.dto.ResultDto;
+import com.example.gradesys.model.dto.ResultInfo;
 import com.example.gradesys.model.dto.ResultResponseDto;
 import com.example.gradesys.service.ResultService;
 import com.example.gradesys.service.SubjectService;
@@ -43,18 +44,18 @@ public class JournalController {
     }
 
     @GetMapping("/result/{subjectId}")
-    public List<Result> getResultsBySubject(@PathVariable Long subjectId){
+    public List<ResultResponseDto> getResultsBySubject(@PathVariable Long subjectId){
         return modelMapper.map(resultService.getResultsBySubject(subjectId), new TypeToken<List<ResultResponseDto>>(){}.getType());
     }
 
-    @GetMapping("/user/result/{userId}")
-    public List<Result> getResultsByUser(@PathVariable Long userId){
-        return modelMapper.map(resultService.getResultsByUser(userId), new TypeToken<List<ResultResponseDto>>(){}.getType());
+    @GetMapping("/user/result/")
+    public List<ResultInfo> getUserResult(){
+        return modelMapper.map(resultService.getUserResult(), new TypeToken<List<ResultInfo>>(){}.getType());
     }
 
     @PostMapping("/create-subject")
     public void createSubject(String subjectName) throws Status437SubjectNotFound, Status434UserNotFound, Status438SubjectExistsException {
-        resultService.createResultForAll(subjectName); ;
+        resultService.createResultForAllStudents(subjectName);
     }
 
     @DeleteMapping("/delete-subject/{subjectId}")
@@ -62,9 +63,9 @@ public class JournalController {
         subjectService.deleteSubject(subjectId);
     }
 
-    @PostMapping("/create-result")
-    public void createResult(ResultDto resultDto) throws Status434UserNotFound, Status437SubjectNotFound {
-        resultService.createResult(resultDto);
+    @PostMapping("/edit")
+    public void editResult(ResultDto resultDto){
+        resultService.editResult(resultDto);
     }
 
     @PostMapping("/delete-result/{resultId}")

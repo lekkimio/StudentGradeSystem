@@ -5,87 +5,37 @@ import com.example.gradesys.exception.Status437SubjectNotFound;
 import com.example.gradesys.exception.Status438SubjectExistsException;
 import com.example.gradesys.exception.Status439ResultNotFound;
 import com.example.gradesys.model.Result;
-import com.example.gradesys.model.Subject;
 import com.example.gradesys.model.User;
 import com.example.gradesys.model.dto.ResultDto;
-import com.example.gradesys.repo.ResultRepository;
-import com.example.gradesys.repo.SubjectRepository;
-import com.example.gradesys.repo.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.example.gradesys.model.dto.ResultInfo;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
-public class ResultService {
+public interface ResultService {
 
-    private final ResultRepository resultRepository;
-    private final UserRepository userRepository;
-    private final SubjectRepository subjectRepository;
+    void createResult(ResultDto resultDto) throws Status434UserNotFound, Status437SubjectNotFound;
 
-    public void createResult(ResultDto resultDto) throws Status434UserNotFound, Status437SubjectNotFound {
+    void editResult(ResultDto resultDto);
 
-        Result result = resultRepository.findResultBySubjectAndUser(resultDto.subjectId(), resultDto.userId());
+    List<Result> getAllResults();
 
-        if (result != null) {
-            result.setGrade(resultDto.grade());
-            resultRepository.save(result);
+    List<Result> getResultsBySubject(Long subjectId);
 
-        }else {
+    void deleteResult(Long resultId) throws Status439ResultNotFound;
+    void resetResultByUser(Long userId);
 
-        resultRepository.save(Result.builder()
-                .grade(resultDto.grade())
-                .subject(subjectRepository.findById(resultDto.subjectId())
-                        .orElseThrow(()->new Status437SubjectNotFound(resultDto.subjectId())))
-                .user(userRepository.findById(resultDto.userId()).
-                        orElseThrow( ()-> new Status434UserNotFound(resultDto.userId()) ))
-                .build());
+    void resetResultBySubject(Long subjectId);
 
-        }
-    }
+    void resetAllResult();
 
-    public List<Result> getAllResults() {
-        return resultRepository.findAll();
-    }
+    void createResultForAllStudents(String subjectName) throws Status437SubjectNotFound, Status434UserNotFound, Status438SubjectExistsException;
 
-    public List<Result> getResultsBySubject (Long subjectId) {
-        return resultRepository.findAllBySubject_Id(subjectId);
-    }
+    List<Result> getResultsByUser(Long userId);
 
-    public void deleteResult(Long resultId) throws Status439ResultNotFound {
+    void deleteAllUserResults(Long userId);
 
-        Result result = resultRepository.findById(resultId).orElseThrow(()->new Status439ResultNotFound(resultId));
+    List<Double> getAllGradesByUser(Long userId);
 
-        result.setGrade(0.0);
-
-        resultRepository.save(result);
-    }
-
-    public void createResultForAll(String subjectName) throws Status437SubjectNotFound, Status434UserNotFound, Status438SubjectExistsException {
-        if (subjectRepository.findBySubjectName(subjectName) != null) {
-            throw new Status438SubjectExistsException(subjectName);
-        }else {
-            List<User> students = userRepository.findAllByRole_Student();
-
-            Subject newSubject = subjectRepository.save(Subject.builder().subjectName(subjectName).build());
-
-            for (User student : students) {
-                createResult(new ResultDto(student.getId(), newSubject.getId(), 0.0));
-            }
-        }
-    }
-
-    public List<Result> getResultsByUser(Long userId) {
-         return resultRepository.findAllByUser_Id(userId);
-    }
-
-    public void deleteAllUserResults(Long userId) {
-        resultRepository.deleteAllByUser_Id(userId);
-    }
-
-    public List<Double> getAllGradesByUser(User student) {
-        return resultRepository.getGradeByUser(student);
-    }
+    List<ResultInfo> getUserResult();
 }

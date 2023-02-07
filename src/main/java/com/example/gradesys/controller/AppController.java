@@ -13,13 +13,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 public class AppController {
+
+
+    // TODO: 06.02.2023 зміни логіку резалта
+    // TODO: 06.02.2023 Логгер
 
     private final ResultService resultService;
     private final UserService userService;
@@ -43,24 +46,35 @@ public class AppController {
         model.addAttribute("students", students);
         model.addAttribute("subjects", subjectService.getAllSubjects());
 
-        List<ResultInfo> resultInfoList = new ArrayList<>();
+        /*List<ResultInfo> resultInfoList = new ArrayList<>();
 
         for (User student : students) {
             resultInfoList.add(ResultInfo.builder()
                     .user(modelMapper.map(student, UserResponseDto.class))
-                    .grades(resultService.getAllGradesByUser(student))
+                    .grades(resultService.getAllGradesByUser(student.getId()))
                     .build());
-        }
+        }*/
 
 
-        model.addAttribute("resultList",resultInfoList);
+        model.addAttribute("resultList",resultService.getUserResult());
         return "journal";
     }
 
 
     @GetMapping("/admin")
-    public String getStudents(Principal principal){
+    public String getAdminPage(){
         return "admin";
+    }
+
+    @GetMapping("/journal/edit")
+    public String getEditPage(){
+        return "edit";
+    }
+
+
+    @GetMapping("/auth/signup")
+    public String getSignupPage() {
+        return "signup";
     }
 
 }
