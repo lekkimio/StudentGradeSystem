@@ -1,9 +1,22 @@
 package com.example.gradesys.model;
 
-public enum Role {
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    STUDENT,
-    ADMIN,
-    MANAGER
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class Role {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ERole name;
 }
+

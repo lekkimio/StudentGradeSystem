@@ -5,6 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -27,7 +31,10 @@ public class User {
 
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @OneToMany(fetch = FetchType.EAGER)
+    private Set<Role> roles = new java.util.LinkedHashSet<>();
 
+    @CreatedDate
+    private LocalDateTime createdAt;
 }
+

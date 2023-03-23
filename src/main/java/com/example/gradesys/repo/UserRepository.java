@@ -1,13 +1,20 @@
 package com.example.gradesys.repo;
 
+import com.example.gradesys.model.ERole;
 import com.example.gradesys.model.User;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface UserRepository extends org.springframework.data.jpa.repository.JpaRepository<com.example.gradesys.model.User, Long> {
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
     User findByUsername(String username);
 
-    @Query(value = "select u from User u where u.role='STUDENT' order by u.id  ")
-    List<User> findAllByRole_Student();
+    List<User> findByRoles_NameOrderByIdAsc(ERole name);
+
+
+
+
+
 }

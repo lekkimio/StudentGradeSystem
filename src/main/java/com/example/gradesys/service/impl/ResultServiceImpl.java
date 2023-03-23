@@ -1,20 +1,21 @@
 package com.example.gradesys.service.impl;
 
-import com.example.gradesys.exception.Status434UserNotFound;
-import com.example.gradesys.exception.Status437SubjectNotFound;
-import com.example.gradesys.exception.Status438SubjectExistsException;
-import com.example.gradesys.exception.Status439ResultNotFound;
+import com.example.gradesys.exception.*;
+import com.example.gradesys.model.Manager;
 import com.example.gradesys.model.Result;
 import com.example.gradesys.model.Subject;
 import com.example.gradesys.model.User;
 import com.example.gradesys.model.dto.ResultDto;
 import com.example.gradesys.model.dto.ResultInfo;
-import com.example.gradesys.model.dto.UserResponseDto;
+import com.example.gradesys.model.dto.UserInfoDto;
 import com.example.gradesys.repo.ResultRepository;
-import com.example.gradesys.repo.SubjectRepository;
-import com.example.gradesys.repo.UserRepository;
+import com.example.gradesys.security.CustomUserDetails;
 import com.example.gradesys.service.ResultService;
+import com.example.gradesys.service.RoleService;
+import com.example.gradesys.service.SubjectService;
+import com.example.gradesys.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,115 +24,129 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ResultServiceImpl implements ResultService {
 
     private final ResultRepository resultRepository;
-    private final UserRepository userRepository;
-    private final SubjectRepository subjectRepository;
 
-    public void createResult(ResultDto resultDto) throws Status434UserNotFound, Status437SubjectNotFound {
+    private final SubjectService subjectService;
+    private final UserService userService;
+    private final RoleService roleService;
 
-        resultRepository.save(Result.builder()
-//                .grade(resultDto.grade())
-                .subject(subjectRepository.findById(resultDto.getSubjectId())
-                        .orElseThrow(()->new Status437SubjectNotFound(resultDto.getSubjectId())))
-                .user(userRepository.findById(resultDto.getUserId()).
-                        orElseThrow( ()-> new Status434UserNotFound(resultDto.getUserId()) ))
-                        .grade(resultDto.getGrade())
-                .build());
+    public Result createResult(ResultDto resultDto) throws Status437SubjectNotFound, Status434UserNotFound {
 
+        return resultRepository.save(Result.builder()
+                .subject(subjectService.getSubject(resultDto.getSubjectId()))
+                .user(userService.getUserById(resultDto.getUserId()))
+                .grade(resultDto.getGrade()).build());
     }
 
-    public void editResult(ResultDto resultDto){
+    public Result editResult(ResultDto resultDto, CustomUserDetails userDetails) throws Status435NoAuthorities, Status440ManagerNotFound, Status437SubjectNotFound, Status434UserNotFound {
 
-        Result result = resultRepository.findResultBySubjectAndUser(resultDto.getSubjectId(), resultDto.getUserId());
+        if (roleService.isStudent(userDetails.getAuthorities())) throw new Status435NoAuthorities("edit result.");
 
-        if (result != null) {
-            result.setGrade(resultDto.getGrade());
-            resultRepository.save(result);
-            // TODO: 07.02.2023 result edit log
-
-
+        Manager manager = null;
+        if (userService.existsByStudent_Id(resultDto.getUserId())) {
+            manager = userService.getManagerByStudent(resultDto.getUserId());
         }
+
+        if (!roleService.isAdmin(userDetails.getAuthorities()) &&
+                (!roleService.isManager(userDetails.getAuthorities()) || !manager.getMentor().getId().equals(userDetails.getId())))
+            throw new Status435NoAuthorities("edit result.");
+
+    Optional<Result> result = resultRepository.findResultBySubject_IdAndUser_Id(resultDto.getSubjectId(), resultDto.getUserId());
+
+    if (result.isPresent()){
+
+        Result resultToUpdate = result.get();
+
+        Double oldGrade = resultToUpdate.getGrade();
+        resultToUpdate.setGrade(resultDto.getGrade());
+        log.info("User {} changed {}'s results from {} to {}",
+                userDetails.getUsername(), resultToUpdate.getUser().getUsername(), oldGrade, resultToUpdate.getGrade());
+
+        return resultRepository.save(resultToUpdate);
+
+
+    } else return createResult(resultDto);
+
+
     }
 
-    public List<Result> getAllResults() {
-        return resultRepository.findAll();
+
+    public List<Result> getResultsBySubject(Long subjectId) {
+        return resultRepository.findAllBySubject_IdOrderByUser_Id(subjectId);
     }
 
-    public List<Result> getResultsBySubject (Long subjectId) {
-        return resultRepository.findAllBySubject_Id(subjectId);
-    }
+    public void deleteResult(Long resultId, CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound {
+        Result result = resultRepository.findById(resultId).orElseThrow(() -> new Status439ResultNotFound(resultId));
+        Manager manager = userService.getManagerByStudent(result.getUser().getId());
+        User mentor = manager.getMentor();
 
-    public void deleteResult(Long resultId) throws Status439ResultNotFound {
-        Result result = resultRepository.findById(resultId).orElseThrow(()->new Status439ResultNotFound(resultId));
+        if (!roleService.isAdmin(userDetails.getAuthorities())
+                && (mentor == null || !userDetails.getId().equals(mentor.getId())))
+            throw new Status435NoAuthorities("delete result");
+
         resultRepository.delete(result);
     }
 
-    public void resetResultByUser(Long userId) {
+    public void resetResultsByUser(Long userId, CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound {
         List<Result> results = resultRepository.findAllByUser_Id(userId);
         for (Result result : results) {
-            result.setGrade(0.0);
-            resultRepository.save(result);
+            deleteResult(result.getId(), userDetails);
         }
     }
 
-    public void resetResultBySubject(Long subjectId) {
-        List<Result> results = resultRepository.findAllBySubject_Id(subjectId);
+    public void resetResultsBySubject(Long subjectId, CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound {
+        List<Result> results = resultRepository.findAllBySubject_IdOrderByUser_Id(subjectId);
         for (Result result : results) {
-            result.setGrade(0.0);
-            resultRepository.save(result);
+            deleteResult(result.getId(), userDetails);
         }
     }
 
-    public void resetAllResult() {
+    public void resetAllResults(CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound {
         List<Result> results = resultRepository.findAll();
         for (Result result : results) {
-            result.setGrade(0.0);
-            resultRepository.save(result);
+            deleteResult(result.getId(), userDetails);
         }
     }
 
-    public void createResultForAllStudents(String subjectName) throws Status437SubjectNotFound, Status434UserNotFound, Status438SubjectExistsException {
-        if (subjectRepository.findBySubjectName(subjectName) != null) {
-            throw new Status438SubjectExistsException(subjectName);
-        }else {
-            List<User> students = userRepository.findAllByRole_Student();
+    public List<Double> getAllUserResultToEachSubject(Long userId) {
 
-            Subject newSubject = subjectRepository.save(Subject.builder().subjectName(subjectName).build());
+        List<Subject> subjects = subjectService.getAllSubjects();
 
-            for (User student : students) {
-                createResult(new ResultDto(student.getId(), newSubject.getId()));
-            }
+        List<Double> grades = new ArrayList<>();
+
+        for (Subject subject : subjects) {
+            Optional<Result> result = resultRepository.findResultBySubject_IdAndUser_Id(subject.getId(), userId);
+            if (result.isPresent()) {
+                grades.add(result.get().getGrade());
+            } else grades.add(0.0);
         }
+
+        return grades;
+
     }
 
-
-    public List<Result> getResultsByUser(Long userId) {
-        return resultRepository.findAllByUser_Id(userId);
-    }
-
-
-    public void deleteAllUserResults(Long userId) {
-        resultRepository.deleteAllByUser_Id(userId);
-    }
-
-    public List<Double> getAllGradesByUser(Long userId) {
-        return resultRepository.getGradeByUser(userId);
+    public List<Result> getAllResults(CustomUserDetails userDetails) {
+        if (roleService.isStudent(userDetails.getAuthorities())) {
+            return resultRepository.findAllByUser_Id(userDetails.getId());
+        }
+        else return resultRepository.findAll();
     }
 
     public List<ResultInfo> getUserResult() {
-        List<User> students = userRepository.findAllByRole_Student();
-
+        List<User> students = userService.getAllStudents();
         List<ResultInfo> resultInfoList = new ArrayList<>();
 
         for (User student : students) {
             resultInfoList.add(ResultInfo.builder()
-                    .user(new UserResponseDto(student.getFirstName(), student.getLastName()))
-                    .grades(getAllGradesByUser(student.getId()))
-                    .build());
+                    .user(new UserInfoDto(student.getFirstName(), student.getLastName()))
+                    .grades(getAllUserResultToEachSubject(student.getId())).build());
         }
 
         return resultInfoList;
     }
+
+
 }

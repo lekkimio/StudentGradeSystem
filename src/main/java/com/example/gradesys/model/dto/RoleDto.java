@@ -4,13 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+
 @AllArgsConstructor
+@Data
 @NoArgsConstructor
-public class ResultDto {
-
-    private Long userId;
-    private Long subjectId;
-    private Double grade;
-
+public class RoleDto {
+    private String name;
 }

@@ -3,7 +3,6 @@ package com.example.gradesys.controller;
 import com.example.gradesys.exception.Status434UserNotFound;
 import com.example.gradesys.exception.Status436UserExistsException;
 import com.example.gradesys.exception.Status437SubjectNotFound;
-import com.example.gradesys.model.User;
 import com.example.gradesys.model.dto.UserRequestDto;
 import com.example.gradesys.service.UserService;
 import lombok.extern.slf4j.Slf4j;

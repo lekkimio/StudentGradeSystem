@@ -1,41 +1,33 @@
 package com.example.gradesys.service;
 
-import com.example.gradesys.exception.Status434UserNotFound;
-import com.example.gradesys.exception.Status437SubjectNotFound;
-import com.example.gradesys.exception.Status438SubjectExistsException;
-import com.example.gradesys.exception.Status439ResultNotFound;
+import com.example.gradesys.exception.*;
 import com.example.gradesys.model.Result;
-import com.example.gradesys.model.User;
 import com.example.gradesys.model.dto.ResultDto;
 import com.example.gradesys.model.dto.ResultInfo;
+import com.example.gradesys.security.CustomUserDetails;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ResultService {
 
-    void createResult(ResultDto resultDto) throws Status434UserNotFound, Status437SubjectNotFound;
+    Result createResult(ResultDto resultDto) throws Status434UserNotFound, Status437SubjectNotFound;
 
-    void editResult(ResultDto resultDto);
+    Result editResult(ResultDto resultDto, CustomUserDetails userDetails) throws Status435NoAuthorities, Status437SubjectNotFound, Status434UserNotFound, Status440ManagerNotFound;
 
-    List<Result> getAllResults();
+    List<Result> getAllResults(CustomUserDetails userDetails);
 
     List<Result> getResultsBySubject(Long subjectId);
 
-    void deleteResult(Long resultId) throws Status439ResultNotFound;
-    void resetResultByUser(Long userId);
+    void deleteResult(Long resultId, CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound;
 
-    void resetResultBySubject(Long subjectId);
+    void resetResultsByUser(Long userId, CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound;
 
-    void resetAllResult();
+    void resetResultsBySubject(Long subjectId, CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound;
 
-    void createResultForAllStudents(String subjectName) throws Status437SubjectNotFound, Status434UserNotFound, Status438SubjectExistsException;
+    void resetAllResults(CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound;
 
-    List<Result> getResultsByUser(Long userId);
-
-    void deleteAllUserResults(Long userId);
-
-    List<Double> getAllGradesByUser(Long userId);
+    List<Double> getAllUserResultToEachSubject(Long userId);
 
     List<ResultInfo> getUserResult();
+
 }

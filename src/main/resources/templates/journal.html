@@ -23,62 +23,67 @@
             background: #000000;
             color: #ffffff;
         }
+
+        div{
+           margin: 5px;
+
+        }
+
     </style>
 </head>
 <body>
-   <div>
-       <table>
-       <tbody>
-       <tr>
-           <th></th>
-           <td th:each="subject:${subjects}" th:text="${subject.subjectName}"></td>
-       </tr>
 
-       <tr th:each="result:${resultList}">
-           <td th:text="${result.user.firstName + ' ' + result.user.lastName}"></td>
-           <td  th:each="grade, gradeStat : ${result.grades}" th:text="${result.grades[gradeStat.index]}">
+<div>
+    <table>
+        <tbody>
+        <tr>
+            <th></th>
+            <td th:each="subject:${subjects}" th:text="${subject.subjectName}"></td>
+        </tr>
 
-       </tbody>
-   </table></div>
+        <tr th:each="result:${resultList}">
+            <td th:text="${result.user.firstName + ' ' + result.user.lastName}"></td>
+            <td  th:each="grade, gradeStat : ${result.grades}"
+                 th:text="${result.grades[gradeStat.index]}">
+        </tr>
+        </tbody>
+    </table></div>
 
 
     <div >
-        <form target="/journal" method="post" action="/journal/edit">
+        <form th:action="@{/journal/result/edit}" method="post">
             <h2>Edit student grade</h2>
-            <p>
-                <label for="userId">UserId</label>
-                <input type="text" id="userId" name="userId" placeholder="UserId" required="" autofocus="">
-            </p>
-            <p>
-                <label for="subjectId" >SubjectId</label>
-                <input type="text" id="subjectId" name="subjectId" placeholder="SubjectId" required="">
-            </p>
-            <p>
-                <label for="grade" >Grade</label>
-                <input type="text" id="grade" name="grade" placeholder="Grade" required="">
-            </p>
-            <p>
-                <button type="submit">Send</button>
-            </p>
+            <div >
+                <select class="form-control"  id="userId" name="userId">
+                    <option value="">Select User</option>
+                    <option th:each="student : ${students}"
+                            th:value="${student.id}"
+                            th:text="${student.firstName}+' '+${student.lastName}"></option>
+                </select>
+            </div>
+
+            <div>
+                <select class="form-control" id="subjectId" name="subjectId">
+                    <option value="">Select Subject</option>
+                    <option th:each="subject : ${subjects}"
+                            th:value="${subject.id}"
+                            th:text="${subject.subjectName}"></option>
+                </select>
+            </div>
+            <div>
+                <input size="10 px" type="text"
+                       pattern="^[0-9]\d{0,2}(\.\d{1})*(,\d+)?$"
+                       id="grade" name="grade" placeholder="Grade"  required="">
+            </div>
+            <button type="submit" id="btnTest"> Submit</button>
         </form>
     </div>
 
-   <div >
-       <form target="_self" method="post" action="/create-user">
-           <h2>Add Student</h2>
-           <p>
-               <label for="username">Username</label>
-               <input type="text" id="username" name="username"placeholder="Username" required="" autofocus="">
-           </p>
-           <p>
-               <label for="password" >Password</label>
-               <input type="password" id="password" name="password" placeholder="Password" required="">
-           </p>
-           <p>
-               <button type="submit">Send</button>
-           </p>
-       </form>
-   </div>
+<h3><a href='http://localhost:8080/students' target='_parent'>
+    <input type='button' style='padding-left:10px;padding-top:8px;padding-right:10px;padding-bottom:10px;margin-left:10px;margin-top:10px;margin-right:10px;margin-bottom:10px;background-color:#1b90bb;color:#FFFFFF;border-left-width:1px;border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-color:#d5d5d5;border-radius:5px;cursor:pointer' value='Students' onMouseOver=this.style.backgroundColor='#FFFFFF';this.style.color='#1b90bb';this.style.borderColor='#d5d5d5' onMouseOut=this.style.backgroundColor='#1b90bb';this.style.color='#FFFFFF';this.style.borderColor='#d5d5d5' />
+</a></h3>
+
+
 
 </body>
 </html>

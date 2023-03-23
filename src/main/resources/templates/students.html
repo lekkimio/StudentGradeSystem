@@ -9,24 +9,55 @@
 <body>
 <div>
 
-  <table>
+    <table>
 
-    <thead>
-    <tr>
-      <th>First Name</th>
-      <th>Last Name</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="student:${students}">
-      <td th:text="${student.getFirstName()}"></td>
-      <td th:text="${student.getLastName()}"></td>
-    </tr>
-    </tbody>
+        <thead>
+        <tr>
+            <th>Student</th>
+            <th>Manager/Mentor</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="students, iter:${studentList}">
+            <td th:text="${students.firstName + ' ' + students.lastName}"></td>
+            <td  th:text="${studentManagerList[iter.index]!=null}
+          ? ${studentManagerList[iter.index].getFirstName() + ' ' + studentManagerList[iter.index].getLastName()}
+             : 'not set'"></td>
+        </tr>
 
+        </tbody>
 
-  </table>
-
+    </table>
 </div>
+
+<form th:action="@{/students/manager/edit}" method="post">
+    <h2>Edit student manager</h2>
+        <label>Student:</label>
+        <div >
+            <select class="form-control"  id="studentId" name="studentId">
+                <option value="">Select User</option>
+                <option th:each="student : ${studentList}"
+                        th:value="${student.id}"
+                        th:text="${student.firstName}+' '+${student.lastName}"></option>
+            </select>
+        </div>
+        <label>Manager:</label>
+    <div >
+        <select class="form-control" id="managerId"  name="managerId">
+            <option value="">Select User</option>
+            <option th:each="manager : ${managerList}"
+                    th:value="${manager.id}"
+                    th:text="${manager.firstName}+' '+${manager.lastName}"></option>
+        </select>
+    </div>
+    <div>
+        <input type="submit" value="Submit">
+    </div>
+
+</form>
+
+<h3><a href='http://localhost:8080/journal' target='_parent'>
+    <input type='button' style='padding-left:10px;padding-top:8px;padding-right:10px;padding-bottom:10px;margin-left:10px;margin-top:10px;margin-right:10px;margin-bottom:10px;background-color:#1b90bb;color:#FFFFFF;border-left-width:1px;border-top-width:1px;border-right-width:1px;border-bottom-width:1px;border-color:#d5d5d5;border-radius:5px;cursor:pointer' value='Journal' onMouseOver=this.style.backgroundColor='#FFFFFF';this.style.color='#1b90bb';this.style.borderColor='#d5d5d5' onMouseOut=this.style.backgroundColor='#1b90bb';this.style.color='#FFFFFF';this.style.borderColor='#d5d5d5' />
+</a></h3>
 </body>
 </html>

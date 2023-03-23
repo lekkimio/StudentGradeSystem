@@ -12,23 +12,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Builder
-public class Result {
+public class Manager {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @OneToOne
+    private User mentor;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
-    private User user;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn
-    private Subject subject;
+    @ManyToOne
+    private User student;
 
-    private Double grade;
 
 
 
