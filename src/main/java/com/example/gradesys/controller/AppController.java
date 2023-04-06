@@ -74,12 +74,14 @@ public class AppController {
 
 
 
+    //TODO wrong http-method for edit and wrong naming
     @PostMapping("/journal/result/edit")
     public String editResult(ResultDto resultDto, CustomUserDetails userDetails) throws Status440ManagerNotFound, Status437SubjectNotFound, Status435NoAuthorities, Status434UserNotFound {
         resultService.editResult(resultDto, userDetails);
         return "redirect:/journal";
     }
 
+    //TODO wrong http-method for edit and wrong naming
     @PostMapping("/students/manager/edit")
     public String editManager(ManagerDto managerDto, CustomUserDetails userDetails) throws  Status435NoAuthorities, Status434UserNotFound {
         userService.editManagerToStudent(managerDto, userDetails) ;

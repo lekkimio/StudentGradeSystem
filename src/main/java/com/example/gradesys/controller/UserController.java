@@ -19,7 +19,9 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+//TODO rename to 'users'
 @RequestMapping("/user")
+//TODO why is it here, but dont using?
 @Slf4j
 public class UserController {
 
@@ -42,6 +44,7 @@ public class UserController {
         userService.deleteManagerToStudent(studentId, userDetails);
     }
 
+    //TODO wrong naming
     @GetMapping("/all")
     public List<UserResponseDto> getAllUsers(CustomUserDetails userDetails) {
         return modelMapper.map(userService.getAllUsers(userDetails), new TypeToken<List<UserResponseDto>>() {}.getType());
@@ -57,6 +60,7 @@ public class UserController {
         userService.deleteUser(id, userDetails);
     }
 
+    //TODO wrong http-method for update
     @PostMapping("/{userId}")
     public void updateUser(@PathVariable Long userId, UserInfoDto infoDto, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities {
         userService.updateUser(userId, infoDto, userDetails);

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+//TODO rename to 'results'
 @RequestMapping("/result")
 @RequiredArgsConstructor
 public class ResultController {
@@ -30,7 +31,7 @@ public class ResultController {
         return modelMapper.map(resultService.getResultsBySubject(subjectId), new TypeToken<List<ResultResponseDto>>(){}.getType());
     }
 
-
+    //TODO wrong http-method for edit
     @PostMapping("/edit")
     public ResultResponseDto editResult(ResultDto resultDto, CustomUserDetails userDetails) throws Status435NoAuthorities, Status437SubjectNotFound, Status434UserNotFound, Status440ManagerNotFound {
         return modelMapper.map(resultService.editResult(resultDto, userDetails), ResultResponseDto.class);
@@ -41,6 +42,7 @@ public class ResultController {
         resultService.deleteResult(resultId, userDetails);
     }
 
+    //TODO wrong naming
     @DeleteMapping("/reset-all")
     public void resetAllResults(CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound {
         resultService.resetAllResults(userDetails);
