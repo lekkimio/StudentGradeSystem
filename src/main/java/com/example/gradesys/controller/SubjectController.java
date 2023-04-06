@@ -13,11 +13,11 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+//TODO rename to 'subjects'
 @RequestMapping("/subject")
 public class SubjectController {
 
     private final SubjectService subjectService;
-
 
     @PostMapping
     public Subject createSubject(String subjectName, CustomUserDetails userDetails) throws Status435NoAuthorities {

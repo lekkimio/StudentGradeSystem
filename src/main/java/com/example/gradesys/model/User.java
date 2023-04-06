@@ -20,6 +20,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //TODO this annotation is redundant here
     @Column(name = "id")
     private Long id;
 
