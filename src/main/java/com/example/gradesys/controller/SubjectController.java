@@ -5,6 +5,7 @@ import com.example.gradesys.model.Subject;
 import com.example.gradesys.security.CustomUserDetails;
 import com.example.gradesys.service.SubjectService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

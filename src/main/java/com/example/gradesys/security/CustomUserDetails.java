@@ -1,11 +1,14 @@
 package com.example.gradesys.security;
 
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 
+
+@ToString
 public class CustomUserDetails implements UserDetails {
 
     private final Long id;

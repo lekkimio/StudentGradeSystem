@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public List<User> getAllUsers(CustomUserDetails userDetails) {
+
         if (roleService.isStudent(userDetails.getAuthorities())) {
             return Collections.singletonList(userRepository.getReferenceById(userDetails.getId()));
         }
@@ -74,6 +75,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.delete(userToDelete);
+
         log.info("User {} {} was deleted by {}", userToDelete.getFirstName(), userToDelete.getLastName(),
                 userDetails.getUsername());
 
@@ -150,7 +152,5 @@ public class UserServiceImpl implements UserService {
     public boolean existsByStudent_Id(Long studentId) {
         return managerRepository.existsByStudent_Id(studentId);
     }
-
-
 
 }

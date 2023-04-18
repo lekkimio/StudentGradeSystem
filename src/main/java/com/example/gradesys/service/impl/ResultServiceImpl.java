@@ -62,6 +62,8 @@ public class ResultServiceImpl implements ResultService {
 
         Double oldGrade = resultToUpdate.getGrade();
         resultToUpdate.setGrade(resultDto.getGrade());
+
+
         log.info("User {} changed {}'s results from {} to {}",
                 userDetails.getUsername(), resultToUpdate.getUser().getUsername(), oldGrade, resultToUpdate.getGrade());
 
