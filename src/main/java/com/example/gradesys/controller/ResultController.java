@@ -1,6 +1,5 @@
 package com.example.gradesys.controller;
 
-import com.example.gradesys.exception.*;
 import com.example.gradesys.model.dto.ResultDto;
 import com.example.gradesys.model.dto.ResultResponseDto;
 import com.example.gradesys.security.CustomUserDetails;
@@ -14,8 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-//TODO rename to 'results'
-@RequestMapping("/result")
+@RequestMapping("/results")
 @RequiredArgsConstructor
 public class ResultController {
 
@@ -39,20 +37,24 @@ public class ResultController {
     @DeleteMapping("/{resultId}")
     public ResponseEntity<Object> deleteResult(@PathVariable Long resultId, CustomUserDetails userDetails){
         resultService.deleteResult(resultId, userDetails);
+        return ResponseEntity.ok().build();
     }
     @DeleteMapping
     public ResponseEntity<Object> resetAllResults(CustomUserDetails userDetails) {
         resultService.resetAllResults(userDetails);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/user/{userId}")
     public ResponseEntity<Object> resetResultByUser(@PathVariable Long userId, CustomUserDetails userDetails) {
         resultService.resetResultsByUser(userId, userDetails);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/subject/{subjectId}")
     public ResponseEntity<Object> resetResultBySubject(@PathVariable Long subjectId, CustomUserDetails userDetails){
         resultService.resetResultsBySubject(subjectId, userDetails);
+        return ResponseEntity.ok().build();
     }
 
 }

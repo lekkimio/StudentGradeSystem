@@ -11,8 +11,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-//TODO rename to 'subjects'
-@RequestMapping("/subject")
+@RequestMapping("/subjects")
 public class SubjectController {
 
     private final SubjectService subjectService;
@@ -25,11 +24,12 @@ public class SubjectController {
     @DeleteMapping("/{subjectId}")
     public ResponseEntity<Object> deleteSubject(@PathVariable Long subjectId, CustomUserDetails userDetails) {
         subjectService.deleteSubject(subjectId, userDetails);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
-    public List<Subject> getAllSubjects(){
-        return subjectService.getAllSubjects();
+    public ResponseEntity<List<Subject>> getAllSubjects(){
+        return ResponseEntity.ok(subjectService.getAllSubjects());
     }
 
 

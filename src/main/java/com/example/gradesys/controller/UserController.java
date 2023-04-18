@@ -8,19 +8,16 @@ import com.example.gradesys.model.dto.UserResponseDto;
 import com.example.gradesys.security.CustomUserDetails;
 import com.example.gradesys.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-//TODO rename to 'users'
-@RequestMapping("/user")
-//TODO why is it here, but dont using?
-@Slf4j
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -37,11 +34,13 @@ public class UserController {
     @PatchMapping("/manager")
     public ResponseEntity<Object> editManager(ManagerDto managerDto, CustomUserDetails userDetails) {
         userService.editManagerToStudent(managerDto, userDetails);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/manager/{studentId}")
     public ResponseEntity<Object> deleteManager(@PathVariable Long studentId, CustomUserDetails userDetails) {
         userService.deleteManagerToStudent(studentId, userDetails);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
@@ -59,10 +58,12 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable Long id, CustomUserDetails userDetails)  {
         userService.deleteUser(id, userDetails);
+        return ResponseEntity.ok().build();
     }
     @PatchMapping("/{userId}")
     public ResponseEntity<Object> updateUser(@PathVariable Long userId, UserInfoDto infoDto, CustomUserDetails userDetails)  {
         userService.updateUser(userId, infoDto, userDetails);
+        return ResponseEntity.ok().build();
     }
 
 }
