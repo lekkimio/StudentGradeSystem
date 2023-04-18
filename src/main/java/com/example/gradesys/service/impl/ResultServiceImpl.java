@@ -33,7 +33,7 @@ public class ResultServiceImpl implements ResultService {
     private final UserService userService;
     private final RoleService roleService;
 
-    public Result createResult(ResultDto resultDto) throws Status437SubjectNotFound, Status434UserNotFound {
+    public Result createResult(ResultDto resultDto) {
 
         return resultRepository.save(Result.builder()
                 .subject(subjectService.getSubject(resultDto.getSubjectId()))
@@ -41,9 +41,9 @@ public class ResultServiceImpl implements ResultService {
                 .grade(resultDto.getGrade()).build());
     }
 
-    public Result editResult(ResultDto resultDto, CustomUserDetails userDetails) throws Status435NoAuthorities, Status440ManagerNotFound, Status437SubjectNotFound, Status434UserNotFound {
+    public Result editResult(ResultDto resultDto, CustomUserDetails userDetails)  {
 
-        if (roleService.isStudent(userDetails.getAuthorities())) throw new Status435NoAuthorities("edit result.");
+        if (roleService.isStudent(userDetails.getAuthorities())) throw new Status401UnauthorizedUser("edit result.");
 
         Manager manager = null;
         if (userService.existsByStudent_Id(resultDto.getUserId())) {
@@ -52,7 +52,7 @@ public class ResultServiceImpl implements ResultService {
 
         if (!roleService.isAdmin(userDetails.getAuthorities()) &&
                 (!roleService.isManager(userDetails.getAuthorities()) || !manager.getMentor().getId().equals(userDetails.getId())))
-            throw new Status435NoAuthorities("edit result.");
+            throw new Status401UnauthorizedUser("edit result.");
 
     Optional<Result> result = resultRepository.findResultBySubject_IdAndUser_Id(resultDto.getSubjectId(), resultDto.getUserId());
 
@@ -78,33 +78,33 @@ public class ResultServiceImpl implements ResultService {
         return resultRepository.findAllBySubject_IdOrderByUser_Id(subjectId);
     }
 
-    public void deleteResult(Long resultId, CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound {
-        Result result = resultRepository.findById(resultId).orElseThrow(() -> new Status439ResultNotFound(resultId));
+    public void deleteResult(Long resultId, CustomUserDetails userDetails)  {
+        Result result = resultRepository.findById(resultId).orElseThrow(() -> new Status404ResultNotFound(resultId));
         Manager manager = userService.getManagerByStudent(result.getUser().getId());
         User mentor = manager.getMentor();
 
         if (!roleService.isAdmin(userDetails.getAuthorities())
                 && (mentor == null || !userDetails.getId().equals(mentor.getId())))
-            throw new Status435NoAuthorities("delete result");
+            throw new Status401UnauthorizedUser("delete result");
 
         resultRepository.delete(result);
     }
 
-    public void resetResultsByUser(Long userId, CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound {
+    public void resetResultsByUser(Long userId, CustomUserDetails userDetails)  {
         List<Result> results = resultRepository.findAllByUser_Id(userId);
         for (Result result : results) {
             deleteResult(result.getId(), userDetails);
         }
     }
 
-    public void resetResultsBySubject(Long subjectId, CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound {
+    public void resetResultsBySubject(Long subjectId, CustomUserDetails userDetails)  {
         List<Result> results = resultRepository.findAllBySubject_IdOrderByUser_Id(subjectId);
         for (Result result : results) {
             deleteResult(result.getId(), userDetails);
         }
     }
 
-    public void resetAllResults(CustomUserDetails userDetails) throws Status439ResultNotFound, Status435NoAuthorities, Status440ManagerNotFound {
+    public void resetAllResults(CustomUserDetails userDetails) {
         List<Result> results = resultRepository.findAll();
         for (Result result : results) {
             deleteResult(result.getId(), userDetails);

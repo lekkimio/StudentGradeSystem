@@ -1,6 +1,6 @@
 package com.example.gradesys.security.jwt;
 
-import com.example.gradesys.exception.Status450JwtException;
+import com.example.gradesys.exception.Status401JwtException;
 import com.example.gradesys.model.User;
 import com.example.gradesys.security.CustomUserDetails;
 import com.example.gradesys.security.CustomUserDetailsService;
@@ -49,12 +49,12 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getUsername(String token) throws Status450JwtException {
+    public String getUsername(String token) {
         try {
             Jws<Claims> claimsJws = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
             return claimsJws.getBody().getSubject();
         }catch (Exception e){
-            throw new Status450JwtException();
+            throw new Status401JwtException();
         }
     }
 

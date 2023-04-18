@@ -1,9 +1,6 @@
 package com.example.gradesys.service.impl;
 
-import com.example.gradesys.exception.Status434UserNotFound;
-import com.example.gradesys.exception.Status435NoAuthorities;
-import com.example.gradesys.exception.Status436UserExistsException;
-import com.example.gradesys.exception.Status440ManagerNotFound;
+import com.example.gradesys.exception.*;
 import com.example.gradesys.model.ERole;
 import com.example.gradesys.model.Manager;
 import com.example.gradesys.model.User;
@@ -32,16 +29,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ManagerRepository managerRepository;
-
     private final RoleService roleService;
-
     private final PasswordEncoder passwordEncoder;
 
 
-
-    public User createUser(UserRequestDto authDto) throws Status436UserExistsException {
+    public User createUser(UserRequestDto authDto){
         if (userRepository.findByUsername(authDto.getUsername()) != null) {
-            throw new Status436UserExistsException(authDto.getUsername());
+            throw new Status409UserExistsException(authDto.getUsername());
         } else {
             User newUser = User.builder()
                     .firstName(authDto.getFirstName())
@@ -66,17 +60,17 @@ public class UserServiceImpl implements UserService {
         else return userRepository.findAll();
     }
 
-    public User getUserById(Long id) throws Status434UserNotFound {
-        return userRepository.findById(id).orElseThrow(() -> new Status434UserNotFound(id));
+    public User getUserById(Long id) throws Status404UserNotFound {
+        return userRepository.findById(id).orElseThrow(() -> new Status404UserNotFound(id));
     }
 
-    public void deleteUser(Long id, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities {
+    public void deleteUser(Long id, CustomUserDetails userDetails)  {
 
         User userToDelete = getUserById(id);
-        if (userToDelete == null) throw new Status434UserNotFound(id);
+        if (userToDelete == null) throw new Status404UserNotFound(id);
 
         if (!userDetails.getId().equals(id) && !roleService.isAdmin(userDetails.getAuthorities())) {
-            throw new Status435NoAuthorities("Delete this User");
+            throw new Status401UnauthorizedUser("Delete this User");
         }
 
         userRepository.delete(userToDelete);
@@ -89,20 +83,19 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByRoles_NameOrderByIdAsc(ERole.STUDENT);
     }
 
-
-    private void setManagerToStudent(ManagerDto managerDto) throws Status434UserNotFound, Status435NoAuthorities {
+    private void setManagerToStudent(ManagerDto managerDto)  {
         User manager = getUserById(managerDto.getManagerId());
 
-        if (!roleService.isManager(manager.getRoles())) throw new Status435NoAuthorities("set this user as manager");
+        if (!roleService.isManager(manager.getRoles())) throw new Status401UnauthorizedUser("set this user as manager");
 
         Manager manager1 = Manager.builder().student(getUserById(managerDto.getStudentId())).mentor(manager).build();
         managerRepository.save(manager1);
 
     }
 
-    public void editManagerToStudent(ManagerDto managerDto, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities {
+    public void editManagerToStudent(ManagerDto managerDto, CustomUserDetails userDetails)  {
 
-        if (!roleService.isAdmin(userDetails.getAuthorities()) ) throw new Status435NoAuthorities("edit manager");
+        if (!roleService.isAdmin(userDetails.getAuthorities()) ) throw new Status401UnauthorizedUser("edit manager");
 
         if (existsByStudent_Id(managerDto.getStudentId())) {
             Manager manager = managerRepository.getByStudent_Id(managerDto.getStudentId());
@@ -116,11 +109,11 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    public void deleteManagerToStudent(Long studentId, CustomUserDetails userDetails) throws Status435NoAuthorities, Status440ManagerNotFound {
+    public void deleteManagerToStudent(Long studentId, CustomUserDetails userDetails)  {
 
-        if (!roleService.isAdmin(userDetails.getAuthorities())) throw new Status435NoAuthorities("delete manager");
+        if (!roleService.isAdmin(userDetails.getAuthorities())) throw new Status401UnauthorizedUser("delete manager");
 
-        if (!existsByStudent_Id(studentId)) throw new Status440ManagerNotFound("Manager Not Found by studentId: "+studentId);
+        if (!existsByStudent_Id(studentId)) throw new Status404ManagerNotFound("Manager Not Found by studentId: " + studentId);
 
         managerRepository.delete(managerRepository.getByStudent_Id(studentId));
 
@@ -135,8 +128,8 @@ public class UserServiceImpl implements UserService {
         return managerRepository.getByStudent_Id(studentId);
     }
 
-    public void updateUser(Long userId, UserInfoDto infoDto, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities {
-        if (!userDetails.getId().equals(userId) && !roleService.isAdmin(userDetails.getAuthorities())) throw new Status435NoAuthorities("update user");
+    public void updateUser(Long userId, UserInfoDto infoDto, CustomUserDetails userDetails)  {
+        if (!userDetails.getId().equals(userId) && !roleService.isAdmin(userDetails.getAuthorities())) throw new Status401UnauthorizedUser("update user");
 
         User userToUpdate = getUserById(userId);
 

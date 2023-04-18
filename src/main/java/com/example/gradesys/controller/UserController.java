@@ -1,8 +1,6 @@
 package com.example.gradesys.controller;
 
-import com.example.gradesys.exception.Status434UserNotFound;
-import com.example.gradesys.exception.Status435NoAuthorities;
-import com.example.gradesys.exception.Status440ManagerNotFound;
+import com.example.gradesys.exception.Status404UserNotFound;
 import com.example.gradesys.model.dto.ManagerDto;
 import com.example.gradesys.model.dto.ManagerResponseDto;
 import com.example.gradesys.model.dto.UserInfoDto;
@@ -29,40 +27,41 @@ public class UserController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/manager/{managerId}")
-    public List<ManagerResponseDto> getManagerStudents(@PathVariable Long managerId) {
-        return modelMapper.map( userService.getManagerStudents(managerId),
-                new TypeToken<List<ManagerResponseDto>>(){}.getType());
+    public ResponseEntity<List<ManagerResponseDto>> getManagerStudents(@PathVariable Long managerId) {
+        return ResponseEntity.ok(modelMapper.map(
+                userService.getManagerStudents(managerId),
+                new TypeToken<List<ManagerResponseDto>>() {}.getType())
+        );
     }
 
     @PatchMapping("/manager")
-    public void editManager(ManagerDto managerDto, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities {
+    public ResponseEntity<Object> editManager(ManagerDto managerDto, CustomUserDetails userDetails) {
         userService.editManagerToStudent(managerDto, userDetails);
     }
 
     @DeleteMapping("/manager/{studentId}")
-    public void deleteManager(@PathVariable Long studentId, CustomUserDetails userDetails) throws Status440ManagerNotFound, Status435NoAuthorities {
+    public ResponseEntity<Object> deleteManager(@PathVariable Long studentId, CustomUserDetails userDetails) {
         userService.deleteManagerToStudent(studentId, userDetails);
     }
 
-    //TODO wrong naming
-    @GetMapping("/all")
-    public List<UserResponseDto> getAllUsers(CustomUserDetails userDetails) {
-        return modelMapper.map(userService.getAllUsers(userDetails), new TypeToken<List<UserResponseDto>>() {}.getType());
+    @GetMapping
+    public ResponseEntity<List<UserResponseDto>> getAllUsers(CustomUserDetails userDetails) {
+
+        return ResponseEntity.ok(modelMapper.map(userService.getAllUsers(userDetails), new TypeToken<List<UserResponseDto>>() {
+        }.getType()));
     }
 
     @GetMapping("/{id}")
-    public UserResponseDto getUserById(@PathVariable Long id) throws Status434UserNotFound {
-        return modelMapper.map(userService.getUserById(id), UserResponseDto.class);
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) throws Status404UserNotFound {
+        return ResponseEntity.ok(modelMapper.map(userService.getUserById(id), UserResponseDto.class));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities {
+    public ResponseEntity<Object> deleteUser(@PathVariable Long id, CustomUserDetails userDetails)  {
         userService.deleteUser(id, userDetails);
     }
-
-    //TODO wrong http-method for update
-    @PostMapping("/{userId}")
-    public void updateUser(@PathVariable Long userId, UserInfoDto infoDto, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities {
+    @PatchMapping("/{userId}")
+    public ResponseEntity<Object> updateUser(@PathVariable Long userId, UserInfoDto infoDto, CustomUserDetails userDetails)  {
         userService.updateUser(userId, infoDto, userDetails);
     }
 

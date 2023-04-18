@@ -1,10 +1,6 @@
 package com.example.gradesys.controller;
 
 
-import com.example.gradesys.exception.Status434UserNotFound;
-import com.example.gradesys.exception.Status435NoAuthorities;
-import com.example.gradesys.exception.Status437SubjectNotFound;
-import com.example.gradesys.exception.Status440ManagerNotFound;
 import com.example.gradesys.model.Manager;
 import com.example.gradesys.model.Subject;
 import com.example.gradesys.model.User;
@@ -18,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +34,7 @@ public class AppController {
     }
 
     @GetMapping("/students")
-    public String getStudents(Model model) throws Status440ManagerNotFound {
+    public String getStudents(Model model) {
 
         List<User> studentList = userService.getAllStudents();
         model.addAttribute("studentList", studentList);
@@ -71,19 +67,13 @@ public class AppController {
 
         return "journal";
     }
-
-
-
-    //TODO wrong http-method for edit and wrong naming
-    @PostMapping("/journal/result/edit")
-    public String editResult(ResultDto resultDto, CustomUserDetails userDetails) throws Status440ManagerNotFound, Status437SubjectNotFound, Status435NoAuthorities, Status434UserNotFound {
+    @PatchMapping("/journal/result")
+    public String editResult(ResultDto resultDto, CustomUserDetails userDetails){
         resultService.editResult(resultDto, userDetails);
         return "redirect:/journal";
     }
-
-    //TODO wrong http-method for edit and wrong naming
-    @PostMapping("/students/manager/edit")
-    public String editManager(ManagerDto managerDto, CustomUserDetails userDetails) throws  Status435NoAuthorities, Status434UserNotFound {
+    @PatchMapping("/students/manager")
+    public String editManager(ManagerDto managerDto, CustomUserDetails userDetails) {
         userService.editManagerToStudent(managerDto, userDetails) ;
         return "redirect:/students";
     }

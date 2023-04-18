@@ -1,8 +1,6 @@
 package com.example.gradesys.controller;
 
 
-import com.example.gradesys.exception.Status435NoAuthorities;
-import com.example.gradesys.exception.Status437SubjectNotFound;
 import com.example.gradesys.model.Subject;
 import com.example.gradesys.security.CustomUserDetails;
 import com.example.gradesys.service.SubjectService;
@@ -20,12 +18,12 @@ public class SubjectController {
     private final SubjectService subjectService;
 
     @PostMapping
-    public Subject createSubject(String subjectName, CustomUserDetails userDetails) throws Status435NoAuthorities {
-        return subjectService.createSubject(subjectName, userDetails);
+    public ResponseEntity<Subject> createSubject(String subjectName, CustomUserDetails userDetails) {
+        return ResponseEntity.ok(subjectService.createSubject(subjectName, userDetails));
     }
 
     @DeleteMapping("/{subjectId}")
-    public void deleteSubject(@PathVariable Long subjectId, CustomUserDetails userDetails) throws Status437SubjectNotFound, Status435NoAuthorities {
+    public ResponseEntity<Object> deleteSubject(@PathVariable Long subjectId, CustomUserDetails userDetails) {
         subjectService.deleteSubject(subjectId, userDetails);
     }
 

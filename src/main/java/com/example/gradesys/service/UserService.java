@@ -12,24 +12,24 @@ import java.util.List;
 
 public interface UserService {
 
-    User createUser(UserRequestDto authDto) throws Status436UserExistsException, Status437SubjectNotFound, Status434UserNotFound;
+    User createUser(UserRequestDto authDto) throws Status409UserExistsException, Status404SubjectNotFound, Status404UserNotFound;
 
     List<User> getAllUsers(CustomUserDetails userDetails);
-    User getUserById(Long id) throws Status434UserNotFound;
+    User getUserById(Long id) throws Status404UserNotFound;
 
-    void deleteUser(Long id, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities;
+    void deleteUser(Long id, CustomUserDetails userDetails) throws Status404UserNotFound, Status401Unauthorized;
 
     List<User> getAllStudents();
 
-    void editManagerToStudent(ManagerDto managerDto, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities;
+    void editManagerToStudent(ManagerDto managerDto, CustomUserDetails userDetails) throws Status404UserNotFound, Status401Unauthorized;
 
-    void deleteManagerToStudent(Long studentId, CustomUserDetails userDetails) throws Status435NoAuthorities, Status440ManagerNotFound;
+    void deleteManagerToStudent(Long studentId, CustomUserDetails userDetails) throws Status401Unauthorized, Status404ManagerNotFound;
 
     List<Manager> getManagerStudents(Long managerId);
 
-    Manager getManagerByStudent(Long studentId) throws Status440ManagerNotFound;
+    Manager getManagerByStudent(Long studentId) throws Status404ManagerNotFound;
 
-    void updateUser(Long userId, UserInfoDto authDto, CustomUserDetails userDetails) throws Status434UserNotFound, Status435NoAuthorities;
+    void updateUser(Long userId, UserInfoDto authDto, CustomUserDetails userDetails) throws Status404UserNotFound, Status401Unauthorized;
 
     List<User> getAllManagers();
 
