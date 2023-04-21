@@ -46,23 +46,34 @@ public class UserServiceImpl implements UserService {
                     .createdAt(LocalDateTime.now())
                     .build();
 
+            log.info("Creating new user: username={}, firstName={}, lastName={}", newUser.getUsername(), newUser.getFirstName(), newUser.getLastName());
 
-            log.info("New User created {}", newUser.getUsername());
+            newUser = userRepository.save(newUser);
 
-            return userRepository.save(newUser);
+            log.info("New User created: id={}, username={}", newUser.getId(), newUser.getUsername());
+
+            return newUser;
         }
     }
 
     public List<User> getAllUsers(CustomUserDetails userDetails) {
-
         if (roleService.isStudent(userDetails.getAuthorities())) {
-            return Collections.singletonList(userRepository.getReferenceById(userDetails.getId()));
+            User user = userRepository.getReferenceById(userDetails.getId());
+            log.info("Retrieved user {} with id {}", user.getUsername(), user.getId());
+            return Collections.singletonList(user);
+        } else {
+            List<User> users = userRepository.findAll();
+            log.info("Retrieved {} users from the database", users.size());
+            return users;
         }
-        else return userRepository.findAll();
     }
 
     public User getUserById(Long id) throws Status404UserNotFound {
-        return userRepository.findById(id).orElseThrow(() -> new Status404UserNotFound(id));
+        log.info("Getting user by id: {}", id);
+        return userRepository.findById(id).orElseThrow(() -> {
+            log.warn("User with id {} not found", id);
+            return new Status404UserNotFound(id);
+        });
     }
 
     public void deleteUser(Long id, CustomUserDetails userDetails)  {
@@ -76,61 +87,81 @@ public class UserServiceImpl implements UserService {
 
         userRepository.delete(userToDelete);
 
-        log.info("User {} {} was deleted by {}", userToDelete.getFirstName(), userToDelete.getLastName(),
-                userDetails.getUsername());
+        log.info("User {} {} with id {} was deleted by {}", userToDelete.getFirstName(), userToDelete.getLastName(),
+                userToDelete.getId(), userDetails.getUsername());
 
     }
 
     public List<User> getAllStudents() {
-        return userRepository.findByRoles_NameOrderByIdAsc(ERole.STUDENT);
+        List<User> students = userRepository.findByRoles_NameOrderByIdAsc(ERole.STUDENT);
+        log.info("Retrieved {} students", students.size());
+        return students;
     }
 
-    private void setManagerToStudent(ManagerDto managerDto)  {
-        User manager = getUserById(managerDto.getManagerId());
+    private void setManagerToStudent(ManagerDto managerDto) {
+        User mentor = getUserById(managerDto.getManagerId());
 
-        if (!roleService.isManager(manager.getRoles())) throw new Status401UnauthorizedUser("set this user as manager");
+        if (!roleService.isManager(mentor.getRoles())) {
+            throw new Status401UnauthorizedUser("set this user as manager");
+        }
 
-        Manager manager1 = Manager.builder().student(getUserById(managerDto.getStudentId())).mentor(manager).build();
-        managerRepository.save(manager1);
+        User student = getUserById(managerDto.getStudentId());
+        Manager manager = Manager.builder().student(student).mentor(mentor).build();
+        managerRepository.save(manager);
 
+        log.info("User {} {} was set as manager for user {} {}", mentor.getFirstName(), mentor.getLastName(),
+                student.getFirstName(), student.getLastName());
     }
 
     public void editManagerToStudent(ManagerDto managerDto, CustomUserDetails userDetails)  {
 
-        if (!roleService.isAdmin(userDetails.getAuthorities()) ) throw new Status401UnauthorizedUser("edit manager");
+        log.info("Editing manager to student with details: {}", managerDto);
+
+        if (!roleService.isAdmin(userDetails.getAuthorities())) {
+            throw new Status401UnauthorizedUser("edit manager");
+        }
 
         if (existsByStudent_Id(managerDto.getStudentId())) {
             Manager manager = managerRepository.getByStudent_Id(managerDto.getStudentId());
             manager.setMentor(getUserById(managerDto.getManagerId()));
             managerRepository.save(manager);
+            log.info("Updated existing manager with details: {}", manager);
 
         } else {
             setManagerToStudent(managerDto);
+            log.info("Created new manager with details: {}", managerDto);
         }
-
-
     }
 
     public void deleteManagerToStudent(Long studentId, CustomUserDetails userDetails)  {
+        log.info("Trying to delete manager for student with id {}", studentId);
 
-        if (!roleService.isAdmin(userDetails.getAuthorities())) throw new Status401UnauthorizedUser("delete manager");
+        if (!roleService.isAdmin(userDetails.getAuthorities())) {
+            log.warn("Unauthorized attempt to delete manager for student with id {}", studentId);
+            throw new Status401UnauthorizedUser("delete manager");
+        }
 
-        if (!existsByStudent_Id(studentId)) throw new Status404ManagerNotFound("Manager Not Found by studentId: " + studentId);
+        if (!existsByStudent_Id(studentId)) {
+            log.warn("Manager not found for student with id {}", studentId);
+            throw new Status404ManagerNotFound("Manager Not Found by studentId: " + studentId);
+        }
 
-        managerRepository.delete(managerRepository.getByStudent_Id(studentId));
-
+        Manager managerToDelete = managerRepository.getByStudent_Id(studentId);
+        managerRepository.delete(managerToDelete);
+        log.info("Manager {} deleted for student with id {}", managerToDelete.getMentor().getUsername(), studentId);
     }
 
     public List<Manager> getManagerStudents(Long managerId) {
         return managerRepository.findAllByMentor_Id(managerId);
     }
 
-
     public Manager getManagerByStudent(Long studentId) {
         return managerRepository.getByStudent_Id(studentId);
     }
 
     public void updateUser(Long userId, UserInfoDto infoDto, CustomUserDetails userDetails)  {
+        log.info("Updating user with id {} by {}", userId, userDetails.getUsername());
+
         if (!userDetails.getId().equals(userId) && !roleService.isAdmin(userDetails.getAuthorities())) throw new Status401UnauthorizedUser("update user");
 
         User userToUpdate = getUserById(userId);
@@ -143,11 +174,17 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(userToUpdate);
+
+        log.info("User with id {} was updated by {}", userId, userDetails.getUsername());
     }
 
+
     public List<User> getAllManagers() {
-        return userRepository.findByRoles_NameOrderByIdAsc(ERole.MANAGER);
+        List<User> managers = userRepository.findByRoles_NameOrderByIdAsc(ERole.MANAGER);
+        log.info("Retrieved {} managers.", managers.size());
+        return managers;
     }
+
 
     public boolean existsByStudent_Id(Long studentId) {
         return managerRepository.existsByStudent_Id(studentId);

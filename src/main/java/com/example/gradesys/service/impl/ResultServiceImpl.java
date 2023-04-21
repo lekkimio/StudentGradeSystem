@@ -28,22 +28,27 @@ import java.util.Optional;
 public class ResultServiceImpl implements ResultService {
 
     private final ResultRepository resultRepository;
-
     private final SubjectService subjectService;
     private final UserService userService;
     private final RoleService roleService;
 
     public Result createResult(ResultDto resultDto) {
-
-        return resultRepository.save(Result.builder()
+        Result result = resultRepository.save(Result.builder()
                 .subject(subjectService.getSubject(resultDto.getSubjectId()))
                 .user(userService.getUserById(resultDto.getUserId()))
                 .grade(resultDto.getGrade()).build());
+        log.info("Result created: {}", result);
+        return result;
     }
 
     public Result editResult(ResultDto resultDto, CustomUserDetails userDetails)  {
 
-        if (roleService.isStudent(userDetails.getAuthorities())) throw new Status401UnauthorizedUser("edit result.");
+        log.info("Attempting to edit result for subject {} and user {}", resultDto.getSubjectId(), resultDto.getUserId());
+
+        if (roleService.isStudent(userDetails.getAuthorities())) {
+            log.warn("Unauthorized access to edit result by student {}", userDetails.getUsername());
+            throw new Status401UnauthorizedUser("edit result.");
+        }
 
         Manager manager = null;
         if (userService.existsByStudent_Id(resultDto.getUserId())) {
@@ -51,32 +56,33 @@ public class ResultServiceImpl implements ResultService {
         }
 
         if (!roleService.isAdmin(userDetails.getAuthorities()) &&
-                (!roleService.isManager(userDetails.getAuthorities()) || !manager.getMentor().getId().equals(userDetails.getId())))
+                (!roleService.isManager(userDetails.getAuthorities()) || !manager.getMentor().getId().equals(userDetails.getId()))) {
+            log.warn("Unauthorized access to edit result by user {}", userDetails.getUsername());
             throw new Status401UnauthorizedUser("edit result.");
+        }
 
-    Optional<Result> result = resultRepository.findResultBySubject_IdAndUser_Id(resultDto.getSubjectId(), resultDto.getUserId());
+        Optional<Result> result = resultRepository.findResultBySubject_IdAndUser_Id(resultDto.getSubjectId(), resultDto.getUserId());
 
-    if (result.isPresent()){
+        if (result.isPresent()){
 
-        Result resultToUpdate = result.get();
+            Result resultToUpdate = result.get();
 
-        Double oldGrade = resultToUpdate.getGrade();
-        resultToUpdate.setGrade(resultDto.getGrade());
+            Double oldGrade = resultToUpdate.getGrade();
+            resultToUpdate.setGrade(resultDto.getGrade());
 
+            log.info("User {} changed {}'s results from {} to {}",
+                    userDetails.getUsername(), resultToUpdate.getUser().getUsername(), oldGrade, resultToUpdate.getGrade());
 
-        log.info("User {} changed {}'s results from {} to {}",
-                userDetails.getUsername(), resultToUpdate.getUser().getUsername(), oldGrade, resultToUpdate.getGrade());
+            return resultRepository.save(resultToUpdate);
 
-        return resultRepository.save(resultToUpdate);
-
-
-    } else return createResult(resultDto);
-
-
+        } else {
+            log.info("Creating new result for subject {} and user {}", resultDto.getSubjectId(), resultDto.getUserId());
+            return createResult(resultDto);
+        }
     }
 
-
     public List<Result> getResultsBySubject(Long subjectId) {
+        log.info("Getting results for subject with id {}", subjectId);
         return resultRepository.findAllBySubject_IdOrderByUser_Id(subjectId);
     }
 
@@ -89,31 +95,44 @@ public class ResultServiceImpl implements ResultService {
                 && (mentor == null || !userDetails.getId().equals(mentor.getId())))
             throw new Status401UnauthorizedUser("delete result");
 
+        log.info("User {} deleted result with id {} for user {} in subject {}",
+                userDetails.getUsername(), resultId, result.getUser().getUsername(), result.getSubject().getSubjectName());
+
         resultRepository.delete(result);
     }
 
     public void resetResultsByUser(Long userId, CustomUserDetails userDetails)  {
         List<Result> results = resultRepository.findAllByUser_Id(userId);
+
         for (Result result : results) {
+            log.info("Deleting result with id {}", result.getId());
             deleteResult(result.getId(), userDetails);
         }
+
+        log.info("Reset results for user with id {} complete", userId);
     }
 
     public void resetResultsBySubject(Long subjectId, CustomUserDetails userDetails)  {
+        log.info("Resetting results for subject with {}", subjectId);
         List<Result> results = resultRepository.findAllBySubject_IdOrderByUser_Id(subjectId);
+
         for (Result result : results) {
             deleteResult(result.getId(), userDetails);
+            log.info("Deleted result with id {} for user with id {} in subject with  {}", result.getId(), result.getUser().getId(), result.getSubject().getId());
         }
     }
 
     public void resetAllResults(CustomUserDetails userDetails) {
         List<Result> results = resultRepository.findAll();
+
         for (Result result : results) {
+            log.info("Deleting result with ID {}", result.getId());
             deleteResult(result.getId(), userDetails);
         }
     }
 
     public List<Double> getAllUserResultToEachSubject(Long userId) {
+        log.info("Getting all results for user with id {}", userId);
 
         List<Subject> subjects = subjectService.getAllSubjects();
 
@@ -122,19 +141,29 @@ public class ResultServiceImpl implements ResultService {
         for (Subject subject : subjects) {
             Optional<Result> result = resultRepository.findResultBySubject_IdAndUser_Id(subject.getId(), userId);
             if (result.isPresent()) {
-                grades.add(result.get().getGrade());
-            } else grades.add(0.0);
+                Double grade = result.get().getGrade();
+                log.debug("Found result for user {} in subject {}: {}", userId, subject.getSubjectName(), grade);
+                grades.add(grade);
+            } else {
+                log.debug("No result found for user {} in subject {}", userId, subject.getSubjectName());
+                grades.add(0.0);
+            }
         }
 
-        return grades;
+        log.info("Finished getting all results for user with id {}", userId);
 
+        return grades;
     }
 
     public List<Result> getAllResults(CustomUserDetails userDetails) {
         if (roleService.isStudent(userDetails.getAuthorities())) {
+            log.info("Retrieving all results for user with id: {}", userDetails.getId());
             return resultRepository.findAllByUser_Id(userDetails.getId());
         }
-        else return resultRepository.findAll();
+        else {
+            log.info("Retrieving all results");
+            return resultRepository.findAll();
+        }
     }
 
     public List<ResultInfo> getUserResult() {
@@ -142,13 +171,13 @@ public class ResultServiceImpl implements ResultService {
         List<ResultInfo> resultInfoList = new ArrayList<>();
 
         for (User student : students) {
+            List<Double> grades = getAllUserResultToEachSubject(student.getId());
+            log.info("Grades for student {} {}: {}", student.getFirstName(), student.getLastName(), grades);
             resultInfoList.add(ResultInfo.builder()
                     .user(new UserInfoDto(student.getFirstName(), student.getLastName()))
-                    .grades(getAllUserResultToEachSubject(student.getId())).build());
+                    .grades(grades).build());
         }
 
         return resultInfoList;
     }
-
-
 }
